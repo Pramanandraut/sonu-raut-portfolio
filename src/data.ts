@@ -2,7 +2,7 @@
 export const NAV = ['Home','About','Education','Achievements','Projects','Skills','Contact']
 export const profile = {
   name: 'Pramanand Raut',
-  photo: '/profile.jpg',                 // put your photo in /public/profile.jpg
+  photo: '/public/profile.jpeg',                 // put your photo in /public/profile.jpg
   resume: '/Pramanand_Raut_Resume.pdf',       // put your resume in /public/Sonu_Raut_Resume.pdf
   resumeFilename: 'Pramanand_Raut_Resume.pdf',
   email: 'pramanandraut42@gmail.com',                             // e.g. 'you@example.com'
