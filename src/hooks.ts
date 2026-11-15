@@ -1,39 +1,137 @@
+
 import { useEffect, useState } from 'react'
 import { profile } from './data'
 
-export function useReveal() {
+export function useReveal(): void {
   useEffect(() => {
-    const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target) } }), { threshold: 0.12 })
-    document.querySelectorAll('.rv').forEach(e => io.observe(e))
+    const io = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in')
+            io.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.12 }
+    )
+
+    document.querySelectorAll('.rv').forEach(element => {
+      io.observe(element)
+    })
+
     return () => io.disconnect()
   }, [])
 }
-export function useActive(ids: string[]) {
-  const [a, setA] = useState(ids[0])
+
+export function useActive(ids: string[]): string {
+  const [active, setActive] = useState(ids[0])
+
   useEffect(() => {
-    const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) setA(x.target.id) }), { rootMargin: '-45% 0px -50% 0px' })
-    ids.forEach(i => { const el = document.getElementById(i); if (el) io.observe(el) })
+    const io = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setActive(entry.target.id)
+          }
+        })
+      },
+      { rootMargin: '-45% 0px -50% 0px' }
+    )
+
+    ids.forEach(id => {
+      const element = document.getElementById(id)
+      if (element) io.observe(element)
+    })
+
     return () => io.disconnect()
   }, [ids])
-  return a
+
+  return active
 }
-export function useTyping(words: string[]) {
-  const [txt, setTxt] = useState('')
+
+export function useTyping(words: string[]): string {
+  const [text, setText] = useState('')
+
   useEffect(() => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setTxt(words[0]); return }
-    let i = 0, j = 0, del = false, t: number
-    const tick = () => {
-      const s = words[i]; setTxt(s.slice(0, j))
-      if (!del && j === s.length) { del = true; t = window.setTimeout(tick, 1400); return }
-      if (del && j === 0) { del = false; i = (i + 1) % words.length }
-      j += del ? -1 : 1; t = window.setTimeout(tick, del ? 35 : 70)
+    if (!words.length) return
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setText(words[0])
+      return
     }
-    tick(); return () => clearTimeout(t)
+
+    let i = 0
+    let j = 0
+    let deleting = false
+    let timer: number
+
+    const tick = () => {
+      const currentWord = words[i]
+      setText(currentWord.slice(0, j))
+
+      if (!deleting && j === currentWord.length) {
+        deleting = true
+        timer = window.setTimeout(tick, 1400)
+        return
+      }
+
+      if (deleting && j === 0) {
+        deleting = false
+        i = (i + 1) % words.length
+      }
+
+      j += deleting ? -1 : 1
+      timer = window.setTimeout(tick, deleting ? 35 : 70)
+    }
+
+    tick()
+
+    return () => window.clearTimeout(timer)
   }, [words])
-  return txt
+
+  return text
 }
-/** True only if a real PDF exists at profile.resume (dev servers return index.html for missing files). */
-export function useResume(): void {
+
+/** Checks whether a valid PDF resume exists. */
+export function useResume(): boolean {
   const [ok, setOk] = useState(false)
- 
+
+  useEffect(() => {
+    if (!profile.resume) {
+      setOk(false)
+      return
+    }
+
+    const controller = new AbortController()
+
+    const checkResume = async () => {
+      try {
+        const response = await fetch(profile.resume, {
+          method: 'HEAD',
+          signal: controller.signal,
+          cache: 'no-store'
+        })
+
+        const contentType =
+          response.headers.get('content-type') || ''
+
+        setOk(
+          response.ok &&
+          contentType.toLowerCase().includes('application/pdf')
+        )
+      } catch {
+        if (!controller.signal.aborted) {
+          setOk(false)
+        }
+      }
+    }
+
+    void checkResume()
+
+    return () => controller.abort()
+  }, [])
+
+  return ok
 }
+
