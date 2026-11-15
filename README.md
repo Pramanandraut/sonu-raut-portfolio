@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Pramanand Raut: Portfolio (React + TypeScript + Tailwind + Vite)
 
 ## Run locally
@@ -24,3 +25,7 @@ Never put secret API keys in `VITE_` variables; they are public in the built sit
 ## Deploy
 - **Netlify / Vercel / Cloudflare Pages:** import the Git repo, build command `npm run build`, output directory `dist`. Add `VITE_CONTACT_ENDPOINT` in the host's environment settings.
 - **GitHub Pages:** push the `dist` output (set `base: '/<repo>/'` in `vite.config.ts` if using a project page).
+=======
+# sonu-raut-portfolio
+hello guys
+>>>>>>> 0ffdcaf90bc591513670990ed968c54008fce083
